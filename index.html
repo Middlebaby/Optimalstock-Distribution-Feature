@@ -1,0 +1,692 @@
+import React, { useState } from 'react';
+import { Package, TrendingUp, AlertTriangle, MapPin, Plus, DollarSign, BarChart3, Home, Truck, RotateCcw, Warehouse, Edit, Trash2 } from 'lucide-react';
+
+const OptimalStockPro = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [showModal, setShowModal] = useState(false);
+  
+  const warehouseData = [
+    { id: 1, batch: 'BATCH-200125', product: 'Strawberry Yoghurt 200ml', quantity: 120, productionDate: '2025-01-20', expiryDate: '2025-02-03', daysToExpiry: 15, costPerUnit: 300, status: 'Active' },
+    { id: 2, batch: 'BATCH-180125', product: 'Vanilla Yoghurt 200ml', quantity: 80, productionDate: '2025-01-18', expiryDate: '2025-02-01', daysToExpiry: 13, costPerUnit: 300, status: 'Active' },
+    { id: 3, batch: 'BATCH-150125', product: 'Strawberry Yoghurt 200ml', quantity: 0, productionDate: '2025-01-15', expiryDate: '2025-01-29', daysToExpiry: 10, costPerUnit: 300, status: 'Fully Distributed' },
+    { id: 4, batch: 'BATCH-170125', product: 'Vanilla Yoghurt 200ml', quantity: 45, productionDate: '2025-01-17', expiryDate: '2025-01-31', daysToExpiry: 12, costPerUnit: 300, status: 'Active' }
+  ];
+
+  const locations = [
+    { 
+      id: 1, 
+      name: 'Shoprite Ikeja', 
+      contact: 'Mr. Adebayo', 
+      phone: '0801-234-5678',
+      stock: [{ batch: 'BATCH-170125', product: 'Strawberry Yoghurt 200ml', quantity: 45, daysToExpiry: 12, salesRate: 10 }],
+      totalValue: 22500,
+      outstanding: 15000
+    },
+    { 
+      id: 2, 
+      name: 'Spar Lekki', 
+      contact: 'Mrs. Chioma', 
+      phone: '0802-345-6789',
+      stock: [{ batch: 'BATCH-180125', product: 'Vanilla Yoghurt 200ml', quantity: 28, daysToExpiry: 13, salesRate: 8 }],
+      totalValue: 14000,
+      outstanding: 0
+    },
+    { 
+      id: 3, 
+      name: 'Grand Square Ajah', 
+      contact: 'Mr. Kunle', 
+      phone: '0803-456-7890',
+      stock: [{ batch: 'BATCH-150125', product: 'Strawberry Yoghurt 200ml', quantity: 35, daysToExpiry: 8, salesRate: 3 }],
+      totalValue: 17500,
+      outstanding: 17500
+    }
+  ];
+
+  const distributions = [
+    { id: 1, date: '2025-01-19', location: 'Shoprite Ikeja', batch: 'BATCH-190125', product: 'Strawberry Yoghurt 200ml', quantity: 50, value: 25000, driver: 'John D.', status: 'Delivered', paymentStatus: 'Paid', amountPaid: 25000, paymentDate: '2025-01-20', returned: 0, notes: '' },
+    { id: 2, date: '2025-01-18', location: 'Spar Lekki', batch: 'BATCH-180125', product: 'Vanilla Yoghurt 200ml', quantity: 30, value: 15000, driver: 'Ahmed K.', status: 'Delivered', paymentStatus: 'Paid', amountPaid: 15000, paymentDate: '2025-01-19', returned: 0, notes: '' },
+    { id: 3, date: '2025-01-17', location: 'Grand Square Ajah', batch: 'BATCH-170125', product: 'Strawberry Yoghurt 200ml', quantity: 40, value: 20000, driver: 'John D.', status: 'Delivered', paymentStatus: 'Pending', amountPaid: 0, paymentDate: null, returned: 5, notes: '5 units returned - near expiry' },
+    { id: 4, date: '2025-01-16', location: 'Ebeano Supermarket', batch: 'BATCH-160125', product: 'Vanilla Yoghurt 200ml', quantity: 25, value: 12500, driver: 'Ahmed K.', status: 'Delivered', paymentStatus: 'Partial', amountPaid: 7500, paymentDate: '2025-01-18', returned: 0, notes: 'Partial payment' },
+    { id: 5, date: '2025-01-15', location: 'Shoprite Ikeja', batch: 'BATCH-150125', product: 'Strawberry Yoghurt 200ml', quantity: 60, value: 30000, driver: 'John D.', status: 'In Transit', paymentStatus: 'Pending', amountPaid: 0, paymentDate: null, returned: 0, notes: 'Out for delivery' }
+  ];
+
+  const dailySales = [
+    { id: 1, date: '2025-01-20', location: 'Shoprite Ikeja', product: 'Strawberry Yoghurt 200ml', unitsSold: 12, unitPrice: 500, totalRevenue: 6000, recordedBy: 'Store Manager', verificationMethod: 'Manual Count' },
+    { id: 2, date: '2025-01-20', location: 'Spar Lekki', product: 'Vanilla Yoghurt 200ml', unitsSold: 8, unitPrice: 500, totalRevenue: 4000, recordedBy: 'Store Manager', verificationMethod: 'Manual Count' },
+    { id: 3, date: '2025-01-20', location: 'Grand Square Ajah', product: 'Strawberry Yoghurt 200ml', unitsSold: 3, unitPrice: 500, totalRevenue: 1500, recordedBy: 'Store Manager', verificationMethod: 'Manual Count' },
+    { id: 4, date: '2025-01-19', location: 'Shoprite Ikeja', product: 'Strawberry Yoghurt 200ml', unitsSold: 10, unitPrice: 500, totalRevenue: 5000, recordedBy: 'Store Manager', verificationMethod: 'Manual Count' },
+    { id: 5, date: '2025-01-19', location: 'Spar Lekki', product: 'Vanilla Yoghurt 200ml', unitsSold: 9, unitPrice: 500, totalRevenue: 4500, recordedBy: 'Store Manager', verificationMethod: 'Manual Count' },
+    { id: 6, date: '2025-01-19', location: 'Grand Square Ajah', product: 'Strawberry Yoghurt 200ml', unitsSold: 4, unitPrice: 500, totalRevenue: 2000, recordedBy: 'Store Manager', verificationMethod: 'Manual Count' },
+    { id: 7, date: '2025-01-18', location: 'Shoprite Ikeja', product: 'Strawberry Yoghurt 200ml', unitsSold: 11, unitPrice: 500, totalRevenue: 5500, recordedBy: 'Store Manager', verificationMethod: 'Manual Count' },
+    { id: 8, date: '2025-01-18', location: 'Spar Lekki', product: 'Vanilla Yoghurt 200ml', unitsSold: 7, unitPrice: 500, totalRevenue: 3500, recordedBy: 'Store Manager', verificationMethod: 'Manual Count' }
+  ];
+
+  const totalWarehouseStock = warehouseData.reduce((sum, item) => sum + item.quantity, 0);
+  const totalDistributedStock = locations.reduce((sum, loc) => sum + loc.stock.reduce((s, item) => s + item.quantity, 0), 0);
+  const totalOutstanding = locations.reduce((sum, loc) => sum + loc.outstanding, 0);
+  const criticalStock = locations.filter(loc => loc.stock.some(item => item.daysToExpiry < 10)).length;
+
+  const StatCard = ({ icon: Icon, title, value, subtitle, alert }) => (
+    <div className={`bg-white rounded-lg p-6 shadow-sm border ${alert ? 'border-red-200' : 'border-gray-200'}`}>
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm text-gray-600 mb-1">{title}</p>
+          <p className={`text-2xl font-bold ${alert ? 'text-red-600' : 'text-gray-900'}`}>{value}</p>
+          {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+        </div>
+        <div className={`p-3 rounded-lg ${alert ? 'bg-red-50' : 'bg-blue-50'}`}>
+          <Icon className={`w-6 h-6 ${alert ? 'text-red-600' : 'text-blue-600'}`} />
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Package className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">Optimal Stock Pro</h1>
+                <p className="text-xs text-gray-500">Inventory Management for Nigerian SMEs</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-900">Arinola's Yoghurt</p>
+                <p className="text-xs text-gray-500">Premium Dairy Products</p>
+              </div>
+              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                <span className="text-purple-600 font-semibold">AA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <nav className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-1 overflow-x-auto">
+            {[
+              { id: 'dashboard', label: 'Dashboard', icon: Home },
+              { id: 'warehouse', label: 'Warehouse', icon: Warehouse },
+              { id: 'distribution', label: 'Distribution', icon: Truck },
+              { id: 'sales', label: 'Sales Tracking', icon: TrendingUp },
+              { id: 'analytics', label: 'Analytics', icon: BarChart3 }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <tab.icon className="w-4 h-4" />
+                <span className="text-sm font-medium">{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <StatCard icon={Package} title="Warehouse Stock" value={totalWarehouseStock} subtitle="units available" />
+              <StatCard icon={MapPin} title="Distributed Stock" value={totalDistributedStock} subtitle="across locations" />
+              <StatCard icon={DollarSign} title="Outstanding" value={`₦${totalOutstanding.toLocaleString()}`} />
+              <StatCard icon={AlertTriangle} title="Critical Alerts" value={criticalStock} alert={criticalStock > 0} />
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Stock by Location</h3>
+                <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+                  <Truck className="w-4 h-4" />
+                  New Distribution
+                </button>
+              </div>
+              <div className="space-y-3">
+                {locations.map(loc => (
+                  <div key={loc.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h4 className="font-semibold text-gray-900">{loc.name}</h4>
+                        <p className="text-xs text-gray-500">{loc.contact} • {loc.phone}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">{loc.stock.reduce((sum, item) => sum + item.quantity, 0)} units</p>
+                        {loc.outstanding > 0 && <p className="text-xs text-red-600">₦{loc.outstanding.toLocaleString()} due</p>}
+                      </div>
+                    </div>
+                    {loc.stock.map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between text-sm bg-gray-50 rounded p-2">
+                        <div>
+                          <p className="font-medium text-gray-700">{item.product}</p>
+                          <p className="text-xs text-gray-500">Batch: {item.batch}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className={`font-medium ${item.daysToExpiry < 10 ? 'text-red-600' : 'text-gray-900'}`}>{item.quantity} units</p>
+                          <p className={`text-xs ${item.daysToExpiry < 10 ? 'text-red-600' : 'text-gray-500'}`}>{item.daysToExpiry} days to expiry</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'warehouse' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Warehouse Inventory</h2>
+              <button className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                <Plus className="w-5 h-5" />
+                New Production
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <StatCard icon={Package} title="Total Stock" value={totalWarehouseStock} subtitle="units" />
+              <StatCard icon={Warehouse} title="Active Batches" value={warehouseData.filter(b => b.status === 'Active').length} />
+              <StatCard icon={AlertTriangle} title="Expiring Soon" value={warehouseData.filter(b => b.daysToExpiry < 10 && b.quantity > 0).length} alert={warehouseData.filter(b => b.daysToExpiry < 10).length > 0} />
+              <StatCard icon={DollarSign} title="Inventory Value" value={`₦${(totalWarehouseStock * 300).toLocaleString()}`} />
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold mb-4">All Batches</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200 text-left text-sm text-gray-600">
+                      <th className="pb-3 pr-4">Batch</th>
+                      <th className="pb-3 pr-4">Product</th>
+                      <th className="pb-3 pr-4">Qty</th>
+                      <th className="pb-3 pr-4">Production</th>
+                      <th className="pb-3 pr-4">Expiry</th>
+                      <th className="pb-3 pr-4">Days Left</th>
+                      <th className="pb-3 pr-4">Status</th>
+                      <th className="pb-3 pr-4">Value</th>
+                      <th className="pb-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {warehouseData.map(item => (
+                      <tr key={item.id} className="border-b border-gray-100 text-sm hover:bg-gray-50">
+                        <td className="py-3 pr-4 font-medium text-blue-600">{item.batch}</td>
+                        <td className="py-3 pr-4">{item.product}</td>
+                        <td className="py-3 pr-4 font-semibold">{item.quantity}</td>
+                        <td className="py-3 pr-4">{item.productionDate}</td>
+                        <td className="py-3 pr-4">{item.expiryDate}</td>
+                        <td className="py-3 pr-4">
+                          <span className={`font-medium ${item.daysToExpiry < 5 ? 'text-red-600' : item.daysToExpiry < 10 ? 'text-yellow-600' : 'text-green-600'}`}>
+                            {item.daysToExpiry} days
+                          </span>
+                        </td>
+                        <td className="py-3 pr-4">
+                          <span className={`px-2 py-1 rounded-full text-xs ${item.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                            {item.status}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-4">₦{(item.quantity * item.costPerUnit).toLocaleString()}</td>
+                        <td className="py-3">
+                          <div className="flex gap-2">
+                            <button className="text-blue-600"><Edit className="w-4 h-4" /></button>
+                            <button className="text-red-600"><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'distribution' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Distribution History</h2>
+              <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg">
+                <Plus className="w-5 h-5" />
+                New Distribution
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <StatCard icon={Truck} title="Distributions" value={distributions.length} />
+              <StatCard icon={Package} title="Units Distributed" value={distributions.reduce((s, d) => s + d.quantity, 0)} />
+              <StatCard icon={RotateCcw} title="Returns" value={distributions.reduce((s, d) => s + d.returned, 0)} />
+              <StatCard icon={DollarSign} title="Pending Payment" value={`₦${distributions.filter(d => d.paymentStatus !== 'Paid').reduce((s, d) => s + (d.value - d.amountPaid), 0).toLocaleString()}`} />
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-semibold mb-4">All Distributions</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-xs text-gray-600">
+                      <th className="pb-3 pr-3">Date</th>
+                      <th className="pb-3 pr-3">Location</th>
+                      <th className="pb-3 pr-3">Batch</th>
+                      <th className="pb-3 pr-3">Product</th>
+                      <th className="pb-3 pr-3">Qty</th>
+                      <th className="pb-3 pr-3">Value</th>
+                      <th className="pb-3 pr-3">Driver</th>
+                      <th className="pb-3 pr-3">Status</th>
+                      <th className="pb-3 pr-3">Payment</th>
+                      <th className="pb-3 pr-3">Paid</th>
+                      <th className="pb-3 pr-3">Pay Date</th>
+                      <th className="pb-3 pr-3">Returns</th>
+                      <th className="pb-3">Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {distributions.map(d => (
+                      <tr key={d.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 pr-3">{d.date}</td>
+                        <td className="py-3 pr-3 font-medium">{d.location}</td>
+                        <td className="py-3 pr-3 text-blue-600 text-xs">{d.batch}</td>
+                        <td className="py-3 pr-3">{d.product}</td>
+                        <td className="py-3 pr-3 font-semibold">{d.quantity}</td>
+                        <td className="py-3 pr-3">₦{d.value.toLocaleString()}</td>
+                        <td className="py-3 pr-3">{d.driver}</td>
+                        <td className="py-3 pr-3">
+                          <span className={`px-2 py-1 rounded-full text-xs ${d.status === 'Delivered' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                            {d.status}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-3">
+                          <span className={`px-2 py-1 rounded-full text-xs ${d.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : d.paymentStatus === 'Partial' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                            {d.paymentStatus}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-3">{d.amountPaid > 0 ? `₦${d.amountPaid.toLocaleString()}` : '-'}</td>
+                        <td className="py-3 pr-3">{d.paymentDate || '-'}</td>
+                        <td className="py-3 pr-3">{d.returned > 0 ? <span className="text-red-600">{d.returned}</span> : '-'}</td>
+                        <td className="py-3 text-xs text-gray-500">{d.notes || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'sales' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Daily Sales Tracking</h2>
+              <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <Plus className="w-5 h-5" />
+                Record Sales
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <StatCard 
+                icon={DollarSign} 
+                title="Today's Revenue" 
+                value={`₦${dailySales.filter(s => s.date === '2025-01-20').reduce((sum, s) => sum + s.totalRevenue, 0).toLocaleString()}`} 
+                subtitle="from all locations"
+              />
+              <StatCard 
+                icon={Package} 
+                title="Units Sold Today" 
+                value={dailySales.filter(s => s.date === '2025-01-20').reduce((sum, s) => sum + s.unitsSold, 0)} 
+                subtitle="across locations"
+              />
+              <StatCard 
+                icon={TrendingUp} 
+                title="This Week" 
+                value={`₦${dailySales.reduce((sum, s) => sum + s.totalRevenue, 0).toLocaleString()}`} 
+                subtitle="total revenue"
+              />
+              <StatCard 
+                icon={BarChart3} 
+                title="Avg Daily Sales" 
+                value="32 units" 
+                subtitle="per day"
+              />
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold mb-4">Sales Records</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 text-left text-xs text-gray-600 uppercase">
+                      <th className="pb-3 pr-3">Date</th>
+                      <th className="pb-3 pr-3">Location</th>
+                      <th className="pb-3 pr-3">Product</th>
+                      <th className="pb-3 pr-3">Units Sold</th>
+                      <th className="pb-3 pr-3">Unit Price</th>
+                      <th className="pb-3 pr-3">Total Revenue</th>
+                      <th className="pb-3 pr-3">Recorded By</th>
+                      <th className="pb-3">Method</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dailySales.map(sale => (
+                      <tr key={sale.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 pr-3">{sale.date}</td>
+                        <td className="py-3 pr-3 font-medium">{sale.location}</td>
+                        <td className="py-3 pr-3">{sale.product}</td>
+                        <td className="py-3 pr-3">
+                          <span className="font-semibold text-blue-600">{sale.unitsSold} units</span>
+                        </td>
+                        <td className="py-3 pr-3">₦{sale.unitPrice}</td>
+                        <td className="py-3 pr-3">
+                          <span className="font-semibold text-green-600">₦{sale.totalRevenue.toLocaleString()}</span>
+                        </td>
+                        <td className="py-3 pr-3 text-gray-600">{sale.recordedBy}</td>
+                        <td className="py-3 text-gray-500">{sale.verificationMethod}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold mb-4">Sales by Location (Today)</h3>
+                <div className="space-y-4">
+                  {locations.map(loc => {
+                    const todaySales = dailySales.filter(s => s.date === '2025-01-20' && s.location === loc.name);
+                    const totalUnits = todaySales.reduce((sum, s) => sum + s.unitsSold, 0);
+                    const totalRevenue = todaySales.reduce((sum, s) => sum + s.totalRevenue, 0);
+                    
+                    return (
+                      <div key={loc.id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-semibold text-gray-900">{loc.name}</h4>
+                          <span className="text-sm font-semibold text-green-600">₦{totalRevenue.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-sm text-gray-600">
+                          <span>{totalUnits} units sold today</span>
+                          <span className="text-xs text-gray-500">Target: {loc.stock[0]?.salesRate || 0} units/day</span>
+                        </div>
+                        <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full ${totalUnits >= (loc.stock[0]?.salesRate || 0) ? 'bg-green-600' : 'bg-yellow-600'}`}
+                            style={{ width: `${Math.min((totalUnits / (loc.stock[0]?.salesRate || 1)) * 100, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold mb-4">WhatsApp Sales Reporting</h3>
+                <div className="space-y-4">
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                        <span className="text-white text-lg">📱</span>
+                      </div>
+                      <h4 className="font-semibold text-green-900">Quick Report via WhatsApp</h4>
+                    </div>
+                    <p className="text-sm text-green-700 mb-3">Retailers can send daily stock count via WhatsApp message</p>
+                    
+                    <div className="bg-white rounded-lg p-3 border border-green-300 mb-3">
+                      <p className="text-xs text-gray-500 mb-2">Example Message Format:</p>
+                      <div className="font-mono text-sm text-gray-800 space-y-1">
+                        <p>STOCK COUNT - Shoprite Ikeja</p>
+                        <p>Strawberry: 35 units</p>
+                        <p>Vanilla: 22 units</p>
+                        <p>- Mr. Adebayo</p>
+                      </div>
+                    </div>
+
+                    <button className="w-full px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">
+                      Send WhatsApp Template to Retailers
+                    </button>
+                  </div>
+
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 className="font-semibold text-blue-900 mb-2">Setup Instructions</h4>
+                    <ol className="text-sm text-blue-700 space-y-2 list-decimal list-inside">
+                      <li>Share reporting template with each retailer</li>
+                      <li>Set reminder time (e.g., 6 PM daily)</li>
+                      <li>Retailers send stock count via WhatsApp</li>
+                      <li>You manually enter data or use WhatsApp Business API</li>
+                    </ol>
+                  </div>
+
+                  <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-xs text-yellow-900 font-medium mb-1">💡 Coming Soon: Auto-Import</p>
+                    <p className="text-xs text-yellow-700">Upgrade to automatically import WhatsApp messages into the system</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <h3 className="font-semibold text-blue-900 mb-2">Reconciliation Formula</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="bg-white rounded p-3 border border-blue-100">
+                  <p className="text-xs text-gray-600 mb-1">Opening Stock</p>
+                  <p className="font-semibold text-gray-900">Distributed Qty</p>
+                </div>
+                <div className="bg-white rounded p-3 border border-blue-100">
+                  <p className="text-xs text-gray-600 mb-1">Closing Stock</p>
+                  <p className="font-semibold text-gray-900">Current Count</p>
+                </div>
+                <div className="bg-white rounded p-3 border border-blue-100">
+                  <p className="text-xs text-gray-600 mb-1">Units Sold</p>
+                  <p className="font-semibold text-green-600">Opening - Closing - Returns</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Weekly Sales Report</h3>
+                <div className="flex gap-2">
+                  <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <option>This Week</option>
+                    <option>Last Week</option>
+                    <option>Last 4 Weeks</option>
+                  </select>
+                  <button className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
+                    Download PDF
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
+                  <p className="text-xs text-blue-600 mb-1">Total Revenue</p>
+                  <p className="text-2xl font-bold text-blue-900">₦32,000</p>
+                  <p className="text-xs text-blue-600 mt-1">Jan 13-19, 2025</p>
+                </div>
+                <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-4">
+                  <p className="text-xs text-green-600 mb-1">Units Sold</p>
+                  <p className="text-2xl font-bold text-green-900">64</p>
+                  <p className="text-xs text-green-600 mt-1">↑ 12% vs last week</p>
+                </div>
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4">
+                  <p className="text-xs text-purple-600 mb-1">Avg Daily Sales</p>
+                  <p className="text-2xl font-bold text-purple-900">9.1</p>
+                  <p className="text-xs text-purple-600 mt-1">units per day</p>
+                </div>
+                <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-4">
+                  <p className="text-xs text-yellow-600 mb-1">Best Day</p>
+                  <p className="text-2xl font-bold text-yellow-900">Sat</p>
+                  <p className="text-xs text-yellow-600 mt-1">15 units sold</p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h4 className="font-semibold text-gray-900 mb-3">Sales by Location (This Week)</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-200 text-left text-xs text-gray-600">
+                        <th className="pb-3 pr-4">Location</th>
+                        <th className="pb-3 pr-4">Units Sold</th>
+                        <th className="pb-3 pr-4">Revenue</th>
+                        <th className="pb-3 pr-4">Avg/Day</th>
+                        <th className="pb-3 pr-4">Target</th>
+                        <th className="pb-3">Performance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b border-gray-100">
+                        <td className="py-3 pr-4 font-medium">Shoprite Ikeja</td>
+                        <td className="py-3 pr-4">35 units</td>
+                        <td className="py-3 pr-4 font-semibold text-green-600">₦17,500</td>
+                        <td className="py-3 pr-4">5.0 units</td>
+                        <td className="py-3 pr-4">70 units (10/day)</td>
+                        <td className="py-3">
+                          <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">50% of target</span>
+                        </td>
+                      </tr>
+                      <tr className="border-b border-gray-100">
+                        <td className="py-3 pr-4 font-medium">Spar Lekki</td>
+                        <td className="py-3 pr-4">24 units</td>
+                        <td className="py-3 pr-4 font-semibold text-green-600">₦12,000</td>
+                        <td className="py-3 pr-4">3.4 units</td>
+                        <td className="py-3 pr-4">56 units (8/day)</td>
+                        <td className="py-3">
+                          <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">43% of target</span>
+                        </td>
+                      </tr>
+                      <tr className="border-b border-gray-100">
+                        <td className="py-3 pr-4 font-medium">Grand Square Ajah</td>
+                        <td className="py-3 pr-4">5 units</td>
+                        <td className="py-3 pr-4 font-semibold text-green-600">₦2,500</td>
+                        <td className="py-3 pr-4">0.7 units</td>
+                        <td className="py-3 pr-4">21 units (3/day)</td>
+                        <td className="py-3">
+                          <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">24% of target</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">Top Selling Products</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-900">Strawberry Yoghurt 200ml</p>
+                        <p className="text-xs text-gray-500">38 units sold</p>
+                      </div>
+                      <span className="font-semibold text-gray-900">₦19,000</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-900">Vanilla Yoghurt 200ml</p>
+                        <p className="text-xs text-gray-500">26 units sold</p>
+                      </div>
+                      <span className="font-semibold text-gray-900">₦13,000</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">Weekly Insights</h4>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm font-medium text-green-900">✓ Strong Weekend Sales</p>
+                      <p className="text-xs text-green-700">Saturday and Sunday accounted for 35% of weekly sales</p>
+                    </div>
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm font-medium text-yellow-900">⚠ Grand Square Underperforming</p>
+                      <p className="text-xs text-yellow-700">Only 24% of target reached. Consider reducing allocation</p>
+                    </div>
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm font-medium text-blue-900">💡 Restock Recommendation</p>
+                      <p className="text-xs text-blue-700">Shoprite needs 70 units for next week based on current pace</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3">
+                <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+                  Email Report
+                </button>
+                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
+                  Share via WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'analytics' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Analytics & Performance</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <StatCard icon={TrendingUp} title="Revenue" value="₦485,000" subtitle="this month" />
+              <StatCard icon={Package} title="Units Sold" value="970" />
+              <StatCard icon={BarChart3} title="Avg Daily Sales" value="32" />
+              <StatCard icon={MapPin} title="Top Location" value="Shoprite" />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <h3 className="text-lg font-semibold mb-4">Performance by Location</h3>
+                <div className="space-y-4">
+                  {locations.map(loc => {
+                    const rate = loc.stock[0]?.salesRate || 0;
+                    const max = Math.max(...locations.map(l => l.stock[0]?.salesRate || 0));
+                    return (
+                      <div key={loc.id}>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm font-medium">{loc.name}</span>
+                          <span className="text-sm font-semibold">{rate} units/day</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${(rate / max) * 100}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <h3 className="text-lg font-semibold mb-4">Recommendations</h3>
+                <div className="space-y-3">
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm font-medium text-green-900">High Performer</p>
+                    <p className="text-xs text-green-700">Shoprite selling well. Increase allocation by 20%.</p>
+                  </div>
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm font-medium text-yellow-900">Slow Mover</p>
+                    <p className="text-xs text-yellow-700">Grand Square has slow sales. Consider promotions.</p>
+                  </div>
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm font-medium text-red-900">Expiry Warning</p>
+                    <p className="text-xs text-red-700">35 units expire in 8 days. Discount or return.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+export default OptimalStockPro;
